@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Teacher_011.Models.Teacher>
+    @using X.PagedList
+    @using X.PagedList.Mvc
+    @using X.PagedList.Mvc.Common
+    @{
+        ViewBag.Title = "Index";
+    }
+    <div class="row">
+        <div class="col-12">
+            <h3 class="text-center">Teacher List</h3>
+            <div class="d-flex justify-content-end mb-1">
+                <a href="@Url.Action("Create","Teachers")" class="btn btn-primary btn-sm">Create New</a>
+
+            </div>
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th></th>
+                        <th>Picture</th>
+                        <th>Teacher Name</th>
+                        <th>Gender</th>
+                        <th>Birth Date</th>
+                        <th>CourseName</th>
+                        <th>ExpectedSalary</th>
+                        <th>Ready To Teach AnySubject?</th>
+                        <th>Button</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    @foreach (var a in Model)
+                    {
+                        <tr style="vertical-align:middle" id="tr_@a.TeacherId">
+                            <td class="text-center">
+                                <button type="button" id="show_@a.TeacherId" class="btn btn-link btn-sm show" data-aid="@a.TeacherId"><i class="bi bi-plus-square"></i></button>
+                                <button type="button" id="hide_@a.TeacherId" class="btn btn-link btn-sm hide" data-aid="@a.TeacherId" style="display:none"><i class="bi bi-dash-square"></i></button>
+                            </td>
+                            <td><img src="~/Pictures/@a.Picture" class="img-thumbnail rounded-circle" style="width:50px" /></td>
+                            <td>@a.TeacherName</td>
+                            <td>@a.Gender</td>
+                            <td>@a.BirthDate.ToString("yyyy-MM-dd")</td>
+                            <td>@a.CourseName</td>
+                            <td>@a.ExpectedSalary</td>
+                            <td>@(a.IsReadyToTeachAnySubject ? "yes":"No")</td>
+                            <td>
+                                <a href="@Url.Action("Edit","Teachers" ,new {id=a.TeacherId})" class="btn btn-success btn-sm">Edit</a>
+                                <button type="button" href="@Url.Action("Delete","Teachers", new {id=a.TeacherId})" class="btn btn-danger btn-sm del" data-pk="@a.TeacherId">Delete</button>
+
+                            </td>
+                        </tr>
+                        <tr style="display:none" id="trq_@a.TeacherId">
+                            <td></td>
+                            <td colspan="7">
+                                <h4>TeacherLogs</h4>
+                                <table class="table table-bordered">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th>InstitudeName </th>
+                                            <th>SubjcetTopic </th>
+                                            <th>CourseDuration(Hours) </th>
+                                            <th>TeachingAbility</th>
+                                        </tr>
+
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var q in a.TeacherLogs)
+                                        {
+                                            <tr>
+                                                <td>@q.InstitudeName</td>
+                                                <td>@q.SubjcetTopic</td>
+                                                <td>@q.CourseDuration</td>
+                                                <td>@q.TeachingAbility</td>
+
+                                            </tr>
+
+                                        }
+                                    </tbody>
+                                </table>
+
+                            </td>
+
+                        </tr>
+
+                    }
+                </tbody>
+
+            </table>
+            <div class="d-flex justify-content-end">
+                @Html.PagedListPager((IPagedList)Model, pg => Url.Action("Index", new { pg = pg }), new PagedListRenderOptions
+           {
+               LiElementClasses = new string[] { "page-item" },
+               PageClasses = new string[] { "page-link" }
+           })
+
+            </div>
+        </div>
+
+    </div>
+
+@section styles
+{
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+}
+@section scripts
+    {
+      <script src="~/Scripts/jquery-3.7.0.js"></script>
+     <script src="~/Scripts/bootstrap.bundle.js"></script>
+
+            <script>
+                $(() => {
+                    $(".show").click(function () {
+                        var aid = $(this).data("aid");
+                        $(`#trq_${aid}`).show();
+                        $(`#hide_${aid}`).show();
+                        $(this).hide();
+                    });
+                    $(".hide").click(function () {
+                        var aid = $(this).data("aid");
+                        $(`#trq_${aid}`).hide();
+                        $(`#show_${aid}`).show();
+                        $(this).hide();
+                    })
+                });
+            </script>
+
+            <script>
+                $(".del").click(function () {
+                    var id = $(this).data("pk");
+                    if (confirm("Are You Sure To Delate?\nTeacherWith all Subjects assciated will be deleted")) {
+                        console.log(id);
+                        $.ajax({
+                            type: "post",
+                            url: `/Teachers/Delete/${id}`,
+                            dataType: "json",
+                            success: r => {
+                                console.log(r);
+                                if (r.success == true) {
+                                    $(`#tr_${r.id}`).remove();
+                                    $(`#trq_${r.id}`).remove();
+                                }
+                            }
+                        })
+                    }
+                }
+                )
+            </script>
+        }
+
+
+
